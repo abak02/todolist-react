@@ -1,22 +1,29 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toTitleCase } from "../utils/case";
 
 export default function TodoList() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(()=>{
+    const savedTasks = localStorage.getItem("tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
   const [task, setTask] = useState("");
+
+  useEffect(()=>{
+    localStorage.setItem("tasks", JSON.stringify(tasks))
+  }, [tasks])
 
   const addTask = () => {
     if (task.trim() === "") return;
-
-    setTasks([
+    const updatedTasks = [
       ...tasks,
       {
         id: Date.now(),
-        text: task,
+        text: toTitleCase(task),
         completed: false,
       },
-    ]);
-
+    ]
+    setTasks(updatedTasks);
     setTask("");
   };
 
@@ -38,11 +45,11 @@ export default function TodoList() {
     <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
       <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
 
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+        <h1 className="text-2xl font-serif font-bold text-emerald-500 mb-2">
           My Todo List
         </h1>
 
-        <p className="text-gray-500 mb-6">
+        <p className="text-gray-400 mb-6">
           Keep track of your daily tasks.
         </p>
 
@@ -58,7 +65,7 @@ export default function TodoList() {
 
           <button
             onClick={addTask}
-            className="bg-slate-600 text-white px-6 py-2 rounded-full hover:bg-blue-700"
+            className="bg-slate-600 text-white px-6 py-2 rounded-full hover:bg-slate-800 transition-all"
           >
             Add
           </button>
@@ -68,17 +75,17 @@ export default function TodoList() {
           {tasks.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg"
+              className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg shadow-md shadow-slate-200"
             >
               <input
                 type="checkbox"
                 checked={item.completed}
                 onChange={() => toggleTask(item.id)}
-                className="h-4 w-4 accent-blue-600"
+                className="h-5 w-5 accent-blue-600 appearance-none border-2 rounded-full border-gray-400 checked:bg-cyan-950 hover:"
               />
 
               <span
-                className={`flex-1 break-words ${
+                className={`flex-1 break-word ${
                   item.completed
                     ? "line-through text-gray-400"
                     : "text-gray-700"
@@ -89,7 +96,7 @@ export default function TodoList() {
 
               <button
                 onClick={() => deleteTask(item.id)}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 cursor-pointer"
                 aria-label="Delete task"
               >
                 Delete
@@ -97,8 +104,8 @@ export default function TodoList() {
             </li>
           ))}
         </ul>
-
-        <p className="text-sm text-gray-500 mt-5">
+        <hr className="mt-5 text-gray-300 rounded-full" />
+        <p className="text-sm text-gray-500 mt-3">
           {tasks.filter((item) => !item.completed).length}
           {" "}tasks remaining
         </p>
